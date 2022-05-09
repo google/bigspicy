@@ -1,0 +1,161 @@
+//    Copyright 2022 Google LLC
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        https://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+
+syntax = "proto3";
+
+package bigspicy;
+
+/// Package - A Collection of Circuit-Modules
+message Package {
+  string name = 1;
+  repeated Module modules = 2;
+  // TODO(growly): This should be "external_modules".
+  repeated ExternalModule ext_modules = 3;
+}
+
+message QualifiedName {
+  string domain = 1;
+  string name = 2;
+}
+
+message Reference {
+  oneof to {
+    QualifiedName qn = 1;
+  }
+}
+
+/// Parameter Enumeration
+///
+/// Supports the common param-types supported in legacy HDLs
+/// such as Verilog and SPICE.
+/// Both `string` and `literal` variants are stored as Protobuf strings,
+/// but are handled materially
+message Parameter {
+  enum SIPrefix {
+    NONE = 0;    // E0
+    YOCTO = 1;   // E-24
+    ZEPTO = 2;   // E-21
+    ATTO = 3;    // E-18
+    FEMTO = 4;   // E-15
+    PICO = 5;    // E-12
+    NANO = 6;    // E-9
+    MICRO = 7;   // E-6
+    MILLI = 8;   // E-3
+    CENTI = 9;   // E-2
+    DECI = 10;   // E-1
+    DECA = 11;   // E1
+    HECTO = 12;  // E2
+    KILO = 13;   // E3
+    MEGA = 14;   // E6
+    GIGA = 15;   // E9
+    TERA = 16;   // E12
+    PETA = 17;   // E15
+    EXA = 18;    // E18
+    ZETTA = 19;  // E21
+    YOTTA = 20;  // E24
+  }
+  oneof value {
+    int64 integer = 2;  // Int
+    double double = 3;  // Float
+    string string = 4;  // String-valued parameter
+    string literal =
+        5;  // Literal expressions, e.g. "my_param1 * 5 + sin(your_param3)"
+  }
+  // For numerical quantities, it may be desirable to include a unit prefix to
+  // indicate the order of magnitude.
+  SIPrefix si_prefix = 100;
+}
+
+message Port {
+  enum Direction {
+    INPUT = 0;
+    OUTPUT = 1;
+    INOUT = 2;
+    NONE = 3;
+  }
+  Signal signal = 1;
+  Direction direction = 2;
+}
+
+message Signal {
+  // Signal Name
+  string name = 1;
+  // Bus Width
+  int64 width = 2;
+}
+
+// Signal Slice
+message Slice {
+  // Parent Signal Name
+  // TODO(growly): This should be a Signal message?
+  string signal = 1;
+  // Top Index
+  int64 top = 2;
+  // Bottom Index
+  // TODO(growly): This should be "bottom".
+  int64 bot = 3;
+}
+
+// Signal Concatenation
+message Concat {
+  repeated Connection parts = 1;
+}
+
+// Connection Union
+// Enumerates all types that can be
+// (a) Connected to Ports, and
+// (b) Concatenated
+message Connection {
+  oneof stype {
+    // TODO(growly): This should be 'sig'.
+    Signal sig = 1;
+    Slice slice = 2;
+    Concat concat = 3;
+  }
+}
+/// Module Instance
+message Instance {
+  // Instance Name
+  string name = 1;
+  // Reference to Module instantiated
+  Reference module = 2;
+  // Parameter Values
+  map<string, Parameter> parameters = 3;
+  // Map internal to external signals by name.
+  map<string, Connection> connections = 4;
+}
+
+/// Module - the primary unit of hardware re-use
+message Module {
+  // Module Name
+  QualifiedName name = 1;
+  // Port Definitions
+  repeated Port ports = 2;
+  // Internal Signals
+  repeated Signal signals = 3;
+  // Module Instances
+  repeated Instance instances = 4;
+  // Parameters and Default Values
+  map<string, Parameter> default_parameters = 5;
+}
+
+/// # Externally Defined Module
+/// Primarily for sake of port-ordering,
+/// for translation with by-position formats.
+message ExternalModule {
+  // Module Name
+  string name = 1;
+  // Port Definitions
+  repeated Port ports = 2;
+}
