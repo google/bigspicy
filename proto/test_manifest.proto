@@ -1,0 +1,105 @@
+//    Copyright 2022 Google LLC
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        https://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+
+syntax = "proto3";
+
+package bigspicy;
+
+message DelayComputation {
+  string spice_variable_name = 1;
+  string trigger_node = 2;
+  string target_node = 3;
+  double result = 4;
+}
+
+// Measurements measure a single property of a single node or device.
+message Measurement {
+  enum Type {
+    VOLTAGE = 0;
+    CURRENT = 1;
+    TIME = 2;
+  }
+
+  string target_node = 1;
+
+  string spice_variable_name = 2;
+
+  // Not sure if this will be useful.
+  // string test_expression = 3;
+}
+
+message LinearAnalysis {
+  enum Type {
+    Y = 0;
+    Z = 1;
+    S = 2;
+    H = 3;
+  }
+
+  enum SweepType {
+    LINEAR = 0;
+    DECADE = 1;
+  }
+
+  message Port {
+    uint64 number = 1;
+    string node = 2;
+    double generating_impedance_ohms = 3;
+  }
+
+  // The name of Spice deck (file) which was run for the test.
+  string spice_source_file = 1;
+
+  string design_region_name = 2;
+
+  Type analysis_type = 3;
+
+  SweepType sweep_type = 4;
+  double start_freq_hz = 5;
+  double stop_freq_hz = 6;
+  uint64 num_points = 7;
+
+  // String tags which hint at what the purpose of the test was, to
+  // distinguish later processing steps.
+  repeated string tags = 20;
+
+  repeated Port ports = 21;
+}
+
+message TransientAnalysis {
+  // The name of Spice deck (file) which was run for the test.
+  string spice_source_file = 1;
+
+  // Some key to be able to associate these results with the DesignRegion
+  // we modeled.
+  string design_region_name = 2;
+
+  // The name of the module being tested, either in its entirety,
+  // or through a design region named above:
+  string module_name = 3;
+
+  // .measure statements which will yield parameters we care about.
+  repeated Measurement measurements = 11;
+
+  repeated DelayComputation delay_computations = 12;
+
+  repeated string tags = 20;
+}
+
+// The TestManifest documents what kinds of Spice tests a previous run of
+// BigSpicy set up, and so tells us results to look for.
+message TestManifest {
+  repeated TransientAnalysis transient_analyses = 1;
+  repeated LinearAnalysis linear_analyses = 2;
+}

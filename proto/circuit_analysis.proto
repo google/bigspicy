@@ -1,0 +1,77 @@
+//    Copyright 2022 Google LLC
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        https://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+
+syntax = "proto3";
+
+package bigspicy;
+
+// A Wire is a Signal (by name) and an index into that Signal's bus.
+message Net {
+  string signal_name = 1;
+  uint64 index = 2;
+}
+
+message SimulatedDriver {
+  // The driven net.
+  Net net = 1;
+}
+
+message CapacitiveLoad {
+  Net net = 1;
+  double value_f = 2;
+}
+
+message DCBias {
+  Net net = 1;
+}
+
+message VoltageProbe {
+  Net net = 1;
+}
+
+message AnalysisPort {
+  Net net = 1;
+  double load_capacitance_f = 2;
+}
+
+message DesignRegion {
+  enum DeviceUnderTestType {
+    SUB_REGION = 0;
+    MODULE = 1;
+    EXTERNAL_MODULE = 2;
+  }
+
+  string name = 1;
+  DeviceUnderTestType dut_type = 2;
+
+  // TODO(growly): This should be a QualifiedName.
+  string for_top_module = 3;
+
+  // List of instances (by name) which are interior to the region.
+  repeated string instances = 4;
+
+  repeated DCBias dc_biases = 5;
+  repeated CapacitiveLoad loads = 6;
+  repeated SimulatedDriver drivers = 7;
+  repeated VoltageProbe voltage_probes = 8;
+  repeated AnalysisPort ports = 9;
+}
+
+message CircuitAnalysis {
+  repeated DesignRegion design_regions = 1;
+
+  // TODO(growly): Add measured input capacitances for external modules here,
+  // since putting them in Circuit is a bit awkward, and the point of this
+  // proto message is to collect all the derived analyses anyway.
+}
