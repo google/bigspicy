@@ -32,7 +32,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 setup(
     name="bigspicy",
     version="0.1.0",
-    description="Circuit analysis helper"
+    description="Circuit analysis helper",
     long_description=long_description,
     long_description_content_type="text/markdown",
     ##url="https://???",
