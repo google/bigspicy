@@ -18,9 +18,6 @@ import pdb
 import math
 from enum import Enum
 import collections
-#from pyverilog.dataflow.dataflow_analyzer import VerilogDataflowAnalyzer
-from pyverilog.vparser import parser as verilog_parser
-import pyverilog.vparser.ast as ast
 
 
 import pdb
@@ -28,8 +25,6 @@ import pdb
 import spice
 from spice_util import NumericalValue, SIUnitPrefix
 
-# TODO(growly): Refactor verilog components into standalone Verilog reading
-# class.
 
 # Modules describe a cell's structure. They are a template for instantiation of
 # the module (cell) in other modules (cells). A design is at its root a module
@@ -525,9 +520,12 @@ class ExternalModule:
     # output Y;
     # output Z ;
 
-    raise RuntimeError('Check this function and make sure it correctly guesses '
-                       'port directions for your PDK.')
+    # raise RuntimeError('Check this function and make sure it correctly guesses '
+    #                    'port directions for your PDK.')
 
+    if port_name in ('d', 'g', 's', 'b'):
+      return Port.Direction.NONE
+      
     if port_name in ('VDD', 'VSS', 'VPWR', 'VGND'):
       return Port.Direction.INOUT
     #elif port_name in ('Y', 'q', 'H', 'L', 'Q', 'QN', 'GCLK', 'CON', 'SN'):
@@ -543,7 +541,7 @@ class ExternalModule:
 
 class Module:
 
-  def __init__(self, ast_node=None):
+  def __init__(self):
     self.name = None
     self.ports = {}
     self.port_order = []
@@ -563,9 +561,16 @@ class Module:
     self.time_unit_prefix = None
     # How many 10^x of a Henry. (None => x = 0)
     self.inductance_unit_prefix = None
+    
+  @classmethod
+  def from_verilog(cls, ast_node: "verilog.ast.Node") -> "Module":
+    """ Create a `Module` from a `verilog.ast.Node`. """
+    from verilog import ModuleReader 
+    
+    this = cls()
+    ModuleReader.LoadAST(this, ast_node)
+    return this 
 
-    if ast_node:
-      self.LoadAST(ast_node)
 
   def __repr__(self):
     desc = f'[module {self.name}]'
@@ -574,7 +579,7 @@ class Module:
   def GetOrCreateSignal(self, name, width=1):
     if name in self.signals:
       return self.signals[name]
-    print(f'module {self.name} creating signal named "{name}"')
+    ##print(f'module {self.name} creating signal named "{name}"') ## Shut up already WE KNOW!
     signal = Signal(name, width=width)
     self.signals[name] = signal
     return signal
@@ -599,138 +604,6 @@ class Module:
     self.ports[name] = port
     self.port_order.append(name)
     return port
-
-  # TODO(growly): Remove Verilog-specific builders from Module, which should be
-  # an abstract data container. Put them in VerilogReader or some such, with a
-  # ToModule() function that returns a Module description of the Verilog.
-  def LoadPortlist(self, ast_portlist):
-    for child in ast_portlist.children():
-      if not isinstance(child, ast.Port):
-        continue
-      name = VerilogIdentifier(child.name).raw
-      _ = self.GetOrCreatePort(name, width=child.width or 1)
-
-  def LoadDecl(self, ast_decl):
-    # ast.Decl declares an ast.Variable, only some of which are of interest.
-    children = ast_decl.children()
-    if len(children) > 1:
-      raise NotImplementedError("didn't expect there to be this many children on a Decl")
-    child = children[0]
-
-    name = VerilogIdentifier(child.name).raw
-    signed = child.signed
-
-    if isinstance(child, ast.Wire) or isinstance(child, ast.Reg):
-      # Treat 'wire' and 'reg' declarations the same for our purposes.
-      if name in self.ports:
-        # It appears the PyVerilog AST produces both a port-type and a `Wire`
-        # for signals which are declared as such, like so: `input clk; wire
-        # clk;` 
-        # In our data model these are one thing: the port. 
-        # We *think* the port must be declared first, and so when this Verilog
-        # syntax is used, the ultimate port-object will already be present in
-        # our `ports`. In which case, nothing more to do here. 
-        return
-        
-      assert(name not in self.signals)
-      width = 1 if not child.width else int(child.width.msb.value) - int(child.width.lsb.value) + 1
-      signal = self.GetOrCreateSignal(name, width=width)
-      return
-    
-    # Else we assume it's an input, output, inout, etc.
-    direction = Port.Direction.NONE
-    if isinstance(child, ast.Input):
-      direction = Port.Direction.INPUT
-    elif isinstance(child, ast.Output):
-      direction = Port.Direction.OUTPUT
-    elif isinstance(child, ast.Inout):
-      direction = Port.Direction.INOUT
-
-    width = 1 if not child.width else int(child.width.msb.value) - int(child.width.lsb.value) + 1
-    if name in self.ports:
-      port = self.ports[name]
-      assert port.signal is not None, f'port {name} should have a signal by this point'
-      # We accept that a decl can override the width and direction of a signal
-      # since ports can be declared without widths or directions. If it does,
-      # we have to fix up the old signal and reconnect everything that would
-      # have been connected to the full bus.
-      if port.signal.width is None or width > port.signal.width:
-        print(f'port {name} widened to {width}')
-        signal = port.signal
-        signal.Disconnect(port)
-        signal.width = width
-        signal.Connect(port)
-
-      assert (width == port.signal.width), (
-          f'port {name} has signal width mismatch {port.signal} != {width}')
-      if port.direction is None or port.direction == Port.Direction.NONE:
-        port.direction = direction
-        print(f'port {name} now has direction {direction}')
-      assert (direction == port.direction), (
-          f'port {name} has direction {port.direction} != {direction}')
-    elif direction != Port.Direction.NONE:
-      # This is not a known port, but it has a direction (i.e. the direction isn't NONE),
-      # so perhaps it should be a port.
-      _ = self.GetOrCreatePort(name, width=width, direction=direction)
-      raise NotImplementedError('wow I can\'t believe this happened')
-  
-  def LoadInstanceList(self, ast_instancelist):
-    module_name = ast_instancelist.module
-    for ast_instance in ast_instancelist.instances:
-      instance = Instance()
-      instance.name = VerilogIdentifier(ast_instance.name).raw
-      instance.module_name = VerilogIdentifier(ast_instance.module).raw
-      if not ast_instance.portlist:
-        #print('skipping instance without connections: {}'.format(instance))
-        del instance
-        continue
-      for ast_portarg in ast_instance.portlist:
-        # These are connections.
-        port_name = ast_portarg.portname
-        connection = Connection(port_name)
-        connection.instance = instance
-        children = ast_portarg.children()
-        if len(children) > 1:
-          raise NotImplementedError('can\'t deal with portargs that have many children')
-        identifier = children[0]
-        if isinstance(identifier, ast.Identifier):
-          net_name = VerilogIdentifier(identifier.name).raw
-          signal = self.signals[net_name]
-          connection.signal = signal
-          signal.Connect(connection)
-        elif isinstance(identifier, ast.Pointer):
-          net_name = VerilogIdentifier(identifier.var.name).raw
-          net_slice = Slice()
-          signal = self.signals[net_name]
-          net_slice.signal = signal
-          net_slice.top = int(identifier.ptr.value)
-          net_slice.bottom = int(identifier.ptr.value)
-          net_slice.Connect(connection)
-          connection.slice = net_slice
-        instance.connections[port_name] = connection
-      self.instances[instance.name] = instance
-
-  def LoadParamList(self, ast_node):
-    print('{} has a param list, which we ignore'.format(self))
-
-  def LoadAST(self, ast_node):
-    # Assume 'ast_node' is a pyverilog.vparser.ast.ModuleDef
-    self.name = ast_node.name
-    
-    for child in ast_node.children():
-      if isinstance(child, ast.Paramlist):
-        # Params come in an ast.ParamList.
-        self.LoadParamList(child)
-      # Ports come in an ast.PortList.
-      elif isinstance(child, ast.Portlist):
-        self.LoadPortlist(child)
-      elif isinstance(child, ast.Decl):
-        # Of primary interest are 'Decl's, which are wires and buses.
-        self.LoadDecl(child)
-      elif isinstance(child, ast.InstanceList):
-        self.LoadInstanceList(child)
-      else:
-        print(f'skipping child: {child}')
 
   def Show(self):
     print(f'module: {self.name}')

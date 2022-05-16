@@ -141,7 +141,7 @@ class SpiceReader():
       tokens = list(filter(lambda x: x is not None and len(x) > 0, tokens))
       if not tokens:
         return
-      if tokens[0] == '.subckt':
+      if tokens[0].lower() == '.subckt':
         if len(tokens) < 2:
           raise GeneralWhoopsieDaisy('.subckt line should have module name')
 
