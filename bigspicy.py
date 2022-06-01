@@ -55,8 +55,8 @@ def DefineOptions(optparser):
   optparser.add_option('--spef', dest='spef_files', default=[], action='append', help='spef files')
   
   # FIXME: what is the difference between these two "spice" options? 
-  optparser.add_option('--spice', dest='spice_files', default=[], action='append', help='spice decks to read')
-  optparser.add_option('--spice_header', dest='spice_header_files', default=[], action='append', help='spice headers')
+  optparser.add_option('--spice', dest='spice_files', default=[], action='append', help='read spice file contents. Subcircuits are read to circuit.Modules')
+  optparser.add_option('--spice_header', dest='spice_header_files', default=[], action='append', help='read spice file headers. Subcircuits are read for port order and stored as ExternalModules')
 
   optparser.add_option('-s', '--dump_spice', dest='dump_spice', default=None, action='store', help='big spice file to write out')
   optparser.add_option('--test_manifest', dest='test_manifest', default=None, action='store', help='read this test manifest and try to find and add the results')

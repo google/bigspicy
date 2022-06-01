@@ -38,7 +38,7 @@ class DesignReader:
       if isinstance(node, ast.ModuleDef):
         # Circuit.Module will read the node and its children to parse the
         # Verilog.
-        module = Module.from_verilog(node)
+        module = Module.FromVerilog(node)
         modules.append(module)
       #if node.attr_names:
       #  for attr in node.attr_names:

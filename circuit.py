@@ -563,14 +563,13 @@ class Module:
     self.inductance_unit_prefix = None
     
   @classmethod
-  def from_verilog(cls, ast_node: "verilog.ast.Node") -> "Module":
+  def FromVerilog(cls, ast_node: "verilog.ast.Node") -> "Module":
     """ Create a `Module` from a `verilog.ast.Node`. """
     from verilog import ModuleReader 
     
     this = cls()
     ModuleReader.LoadAST(this, ast_node)
     return this 
-
 
   def __repr__(self):
     desc = f'[module {self.name}]'
