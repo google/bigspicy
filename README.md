@@ -73,6 +73,7 @@ xdm_bdl -s hspice ~growly/src/asap7sc7p5t_27/CDL/xAct3D_extracted/asap7sc7p5t_27
 ### Compile protobufs
 
 ```
+protoc --proto_path vlsir vlsir/*.proto vlsir/*/*.proto --python_out=.
 protoc proto/*.proto --python_out=.
 ```
 

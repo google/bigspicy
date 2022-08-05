@@ -18,7 +18,8 @@ from google.protobuf import text_format
 
 import pdb
 import circuit
-import proto.circuit_pb2 as circuit_pb
+import circuit_pb2 as circuit_pb
+import utils_pb2 as utils_pb
 from spice_util import SIUnitPrefix
 
 class CircuitWriter():
@@ -35,27 +36,27 @@ class CircuitWriter():
   }
 
   CIRCUIT_TO_PB_SI_PREFIX_MAP = {
-      None: circuit_pb.Parameter.SIPrefix.NONE,
-      SIUnitPrefix.YOCTO: circuit_pb.Parameter.SIPrefix.YOCTO,
-      SIUnitPrefix.ZEPTO: circuit_pb.Parameter.SIPrefix.ZEPTO,
-      SIUnitPrefix.ATTO: circuit_pb.Parameter.SIPrefix.ATTO,
-      SIUnitPrefix.FEMTO: circuit_pb.Parameter.SIPrefix.FEMTO,
-      SIUnitPrefix.PICO: circuit_pb.Parameter.SIPrefix.PICO,
-      SIUnitPrefix.NANO: circuit_pb.Parameter.SIPrefix.NANO,
-      SIUnitPrefix.MICRO: circuit_pb.Parameter.SIPrefix.MICRO,
-      SIUnitPrefix.MILLI: circuit_pb.Parameter.SIPrefix.MILLI,
-      SIUnitPrefix.CENTI: circuit_pb.Parameter.SIPrefix.CENTI,
-      SIUnitPrefix.DECI: circuit_pb.Parameter.SIPrefix.DECI,
-      SIUnitPrefix.DECA: circuit_pb.Parameter.SIPrefix.DECA,
-      SIUnitPrefix.HECTO: circuit_pb.Parameter.SIPrefix.HECTO,
-      SIUnitPrefix.KILO: circuit_pb.Parameter.SIPrefix.KILO,
-      SIUnitPrefix.MEGA: circuit_pb.Parameter.SIPrefix.MEGA,
-      SIUnitPrefix.GIGA: circuit_pb.Parameter.SIPrefix.GIGA,
-      SIUnitPrefix.TERA: circuit_pb.Parameter.SIPrefix.TERA,
-      SIUnitPrefix.PETA: circuit_pb.Parameter.SIPrefix.PETA,
-      SIUnitPrefix.EXA: circuit_pb.Parameter.SIPrefix.EXA,
-      SIUnitPrefix.ZETTA: circuit_pb.Parameter.SIPrefix.ZETTA,
-      SIUnitPrefix.YOTTA: circuit_pb.Parameter.SIPrefix.YOTTA,
+      None: None,
+      SIUnitPrefix.YOCTO: utils_pb.SIPrefix.YOCTO,
+      SIUnitPrefix.ZEPTO: utils_pb.SIPrefix.ZEPTO,
+      SIUnitPrefix.ATTO: utils_pb.SIPrefix.ATTO,
+      SIUnitPrefix.FEMTO: utils_pb.SIPrefix.FEMTO,
+      SIUnitPrefix.PICO: utils_pb.SIPrefix.PICO,
+      SIUnitPrefix.NANO: utils_pb.SIPrefix.NANO,
+      SIUnitPrefix.MICRO: utils_pb.SIPrefix.MICRO,
+      SIUnitPrefix.MILLI: utils_pb.SIPrefix.MILLI,
+      SIUnitPrefix.CENTI: utils_pb.SIPrefix.CENTI,
+      SIUnitPrefix.DECI: utils_pb.SIPrefix.DECI,
+      SIUnitPrefix.DECA: utils_pb.SIPrefix.DECA,
+      SIUnitPrefix.HECTO: utils_pb.SIPrefix.HECTO,
+      SIUnitPrefix.KILO: utils_pb.SIPrefix.KILO,
+      SIUnitPrefix.MEGA: utils_pb.SIPrefix.MEGA,
+      SIUnitPrefix.GIGA: utils_pb.SIPrefix.GIGA,
+      SIUnitPrefix.TERA: utils_pb.SIPrefix.TERA,
+      SIUnitPrefix.PETA: utils_pb.SIPrefix.PETA,
+      SIUnitPrefix.EXA: utils_pb.SIPrefix.EXA,
+      SIUnitPrefix.ZETTA: utils_pb.SIPrefix.ZETTA,
+      SIUnitPrefix.YOTTA: utils_pb.SIPrefix.YOTTA,
   }
 
   PB_TO_CIRCUIT_SI_PREFIX_MAP = {
