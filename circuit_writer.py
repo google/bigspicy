@@ -114,7 +114,8 @@ class CircuitWriter():
       CircuitWriter.ToPort(port, port_pb)
 
   @staticmethod
-  def ToParameter(value, param_pb):
+  def ToParameter(name, value, param_pb):
+    param_pb.name = name
     if isinstance(value, circuit.NumericalValue):
       actual_value = value.value
       if value.unit is not None:
@@ -129,13 +130,14 @@ class CircuitWriter():
       else:
         raise Exception(f'Unknown numerical type: {type(value)} for {value}')
     elif isinstance(value, str):
-      param_pb.string = value
+      param_pb.value.string = value
     else:
       raise Exception(f'Unknown value type: {type(value)} for {value}')
     return param_pb
 
   @staticmethod
-  def ToConnection(connection, conn_pb):
+  def ToConnection(port_name, connection, conn_pb):
+    conn_pb.portname = port_name
     if connection.signal is not None:
       conn_pb.target.sig = connection.signal.name
     elif connection.slice is not None:
@@ -151,16 +153,15 @@ class CircuitWriter():
     instance_pb.name = instance.name
     instance_pb.module.local = instance.module_name
     for name, value in instance.parameters.items():
-      CircuitWriter.ToParameter(value, instance_pb.parameters[name])
+      CircuitWriter.ToParameter(name, value, instance_pb.parameters.add())
     for port_name, connection in instance.connections.items():
-      conn_pb = instance_pb.connections.add()
-      conn_pb.portname = port_name
-      CircuitWriter.ToConnection(connection, conn_pb)
+      CircuitWriter.ToConnection(
+          port_name, connection, instance_pb.connections.add())
 
   def ToModule(module, module_pb):
     module_pb.name = module.name
     for name, value in module.default_parameters.items():
-      CircuitWriter.ToParameter(value, module.default_parameters[name])
+      CircuitWriter.ToParameter(name, value, module_pb.parameters.add())
     for port_name in module.port_order:
       port = module.ports[port_name]
       CircuitWriter.ToPort(port, module_pb.ports.add())
