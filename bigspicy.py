@@ -162,10 +162,11 @@ def WithOptions(options: optparse.Values):
     design.Show()
 
   # Find top.
-  top = design.FindTop(options.top_name)
-  if top is None:
-    raise Exception(f'top not found: {options.top_name}')
-    sys.exit(1)
+  if options.top_name:
+    top = design.FindTop(options.top_name)
+    if top is None:
+      raise Exception(f'top not found: {options.top_name}')
+      sys.exit(1)
 
   analyser = spice_analyser.SpiceAnalyser(design, output_directory, spice_libs)
 
