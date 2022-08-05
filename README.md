@@ -87,8 +87,8 @@ protoc proto/*.proto --python_out=.
     --import \
     --verilog example_inputs/final.v \
     --spef example_inputs/final.spef \
-    --spice_def lib/7nm_TT.pm \
-    --spice_def lib/asap7sc7p5t_27_R.sp \
+    --spice_header lib/7nm_TT.pm \
+    --spice_header lib/asap7sc7p5t_27_R.sp \
     --top fp_multiplier \
     --save final.pb \
     --working_dir /tmp/bigspicy
@@ -99,8 +99,8 @@ protoc proto/*.proto --python_out=.
 ```
 ./bigspicy.py \
     --load /tmp/bigspicy/final.pb \
-    --spice_def lib/7nm_TT.pm \
-    --spice_def lib/asap7sc7p5t_27_R.sp \
+    --spice_header lib/7nm_TT.pm \
+    --spice_header lib/asap7sc7p5t_27_R.sp \
     --top fp_multiplier \
     --dump_spice fp_multiplier.sp
 ```
@@ -110,8 +110,8 @@ protoc proto/*.proto --python_out=.
 ```
 ./bigspicy.py \
     --load /tmp/bigspicy/final.pb \
-    --spice_def lib/7nm_TT.pm \
-    --spice_def lib/asap7sc7p5t_27_R.sp \
+    --spice_header lib/7nm_TT.pm \
+    --spice_header lib/asap7sc7p5t_27_R.sp \
     --top fp_multiplier \
     --flatten_spice \
     --dump_spice fp_multiplier.sp
@@ -122,8 +122,8 @@ protoc proto/*.proto --python_out=.
 ```
 ./bigspicy.py \
     --load /tmp/bigspicy/final.pb \
-    --spice_def lib/7nm_TT.pm \
-    --spice_def lib/asap7sc7p5t_27_R.sp \
+    --spice_header lib/7nm_TT.pm \
+    --spice_header lib/asap7sc7p5t_27_R.sp \
     --top fp_multiplier \
     --working_dir /tmp/bigspicy \
     --generate_input_capacitance_tests
