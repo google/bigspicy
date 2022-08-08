@@ -213,7 +213,7 @@ done
     --working_dir /tmp/bigspicy
 ```
 
-## Import all Skywater 130 primitives too
+### Import all Skywater 130 primitives too
 
 Caution! Globbing every spice file as in this example is not a good idea. You
 will likely end up with multiple definitions for the same circuit. But you can
@@ -221,7 +221,7 @@ do it if you want.
 ```
 ./bigspicy.py \
     --import \
-    --spice /home/aryap/src/pdk-root/share/pdk/sky130A/libs.ref/sky130_fd_pr/spice/sky130_fd_pr__\*
+    --spice ${PDK_ROOT}/share/pdk/sky130A/libs.ref/sky130_fd_pr/spice/sky130_fd_pr__\*
     --spice ${PDK_ROOT}/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice
     --save sky130hd.pb
     --working_dir /tmp/bigspicy
