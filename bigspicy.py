@@ -19,6 +19,7 @@ import os
 import re
 import optparse
 from optparse import OptionParser
+import glob
 
 import circuit
 import circuit_writer
@@ -100,11 +101,24 @@ def DefineOptions(optparser):
                        action='store_true',
                        help='')
 
+
+def GlobAndFlatten(files):
+  flattened = []
+  for spec in files:
+    matched = glob.glob(spec)
+    if not matched:
+      flattened.append(spec)
+      continue
+    flattened.extend(matched)
+  return flattened
+
+
 def Main():
   optparser = OptionParser()
   DefineOptions(optparser)
   options, args = optparser.parse_args()
   return WithOptions(options)
+
 
 def WithOptions(options: optparse.Values):
 
@@ -115,10 +129,10 @@ def WithOptions(options: optparse.Values):
   output_directory = os.path.abspath(output_directory)
 
   # Check that input files exist.
-  verilog_files = options.verilog_files
-  spef_files = options.spef_files
-  spice_headers = options.spice_header_files
-  spice_files = options.spice_files
+  verilog_files = GlobAndFlatten(options.verilog_files)
+  spef_files = GlobAndFlatten(options.spef_files)
+  spice_headers = GlobAndFlatten(options.spice_header_files)
+  spice_files = GlobAndFlatten(options.spice_files)
   file_names = options.verilog_files + options.spef_files + spice_headers + spice_files
 
   if options.test_manifest is not None:
