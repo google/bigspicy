@@ -1,4 +1,3 @@
-
 import optparse
 import os
 import collections
@@ -92,7 +91,18 @@ class Design():
             continue
           # Use the ordered connections to connect up ports, now that we know
           # what the master Module is.
-          port_name = module.port_order[i]
+          try:
+              port_name = module.port_order[i]
+          except IndexError:
+              print(f'warning: instance {instance.name} of module '
+                    f'{instance.module_name} has too many connections; signal '
+                    f'{signal} will not be connected')
+              known_ports = ', '.join(module.port_order)
+              connections = ', '.join(
+                  x.name for x in instance.connections_by_order)
+              print(f'\tknown ports: {known_ports}\n'
+                    f'\tinstance connections: {connections}')
+              continue
 
           connection = circuit.Connection(port_name)
           connection.signal = signal
@@ -357,6 +367,9 @@ class Design():
       else:
         for subckt in parser.subckts:
           module = subckt.ToModule(self)
+          if module.name in self.known_modules:
+              print(f'warning: multiple definitions for subckt {module.name}, '
+                    f'overwriting previous')
           self.known_modules[module.name] = module
 
           for instance in module.instances.values():
