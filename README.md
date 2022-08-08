@@ -14,24 +14,27 @@ be extended to other Spice dialects. (That is why we recommend setting up
 `Xyce` below.) 
 
 ## Prerequisites
+
 You need:
 - The protocol buffer compiler `protoc` 
 - Icarus Verilog
 - Xyce
   - Note this one is special, and takes some more care. 
-- python3
+- python3 (see `requirements.txt`)
   - pyverilog
   - numpy
   - matplotlib
   - protobuf
 
-On debian-family Linuxes, several of the system-installed dependencies can be installed with  
+On debian-family Linuxes, several of the system-installed dependencies can be
+installed with  
 
 ```
 sudo apt install -y protobuf-compiler iverilog
 ```
 
-Given a `python` installation and environment, all other Python dependencies can be installed with  
+Given a `python` installation and environment, all other Python dependencies can
+be installed with  
 
 ```
 pip install -e ".[dev]"
@@ -44,9 +47,10 @@ Install the 'Serial' or 'Parallel' versions of Xyce. Follow the
 
 ### Set up XDM
 
-[XDM](https://github.com/Xyce/XDM) is needed to prepare Spice netlists generated for common proprietary Spice
-engines for use with `Xyce`. It is only needed to prepare the input libraries used
-by `bigspicy`, and only once for each corner in the PDK.
+[XDM](https://github.com/Xyce/XDM) is needed to prepare Spice netlists generated
+for common proprietary Spice engines for use with `Xyce`. It is only needed to
+prepare the input libraries used by `bigspicy`, and only once for each corner in
+the PDK.
 
 Follow the XDM [installation instructions](https://github.com/Xyce/XDM) on their
 GitHub clone. If existing XDM-translated libraries are available, you can skip
@@ -73,6 +77,8 @@ xdm_bdl -s hspice ~growly/src/asap7sc7p5t_27/CDL/xAct3D_extracted/asap7sc7p5t_27
 ### Compile protobufs
 
 ```
+git submodule update --init   # Make sure we pull from Vlsir/schema-proto the
+                              # first time.
 protoc --proto_path vlsir vlsir/*.proto vlsir/*/*.proto --python_out=.
 protoc proto/*.proto --python_out=.
 ```
@@ -129,7 +135,10 @@ protoc proto/*.proto --python_out=.
     --generate_input_capacitance_tests
 ```
 
-This will generate all necessary test files in `/tmp/bigspicy`. It will also generate a test manifest, `test_manifest.pb`, and an analysis file `circuit_analysis.pb`, which you must specify as paths to subsequent analysis steps.
+This will generate all necessary test files in `/tmp/bigspicy`. It will also
+generate a test manifest, `test_manifest.pb`, and an analysis file
+`circuit_analysis.pb`, which you must specify as paths to subsequent analysis
+steps.
 
 #### Run Xyce to perform tests
 
@@ -192,4 +201,14 @@ done
     --analyze_module_tests \
     --input_caps_csv=input_caps.csv \
     --delays_csv=delays.csv
+```
+
+### Import all Skywater 130 `sky130_fd_sc_hd` standard cells into circuit proto
+
+```
+./bigspicy.py \
+    --import \
+    --spice ${PDK_ROOT}/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice
+    --save sky130hd.pb
+    --working_dir /tmp/bigspicy
 ```
