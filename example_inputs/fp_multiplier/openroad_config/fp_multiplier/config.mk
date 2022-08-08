@@ -23,10 +23,10 @@ export DESIGN_NAME            = fp_multiplier
 export DESIGN_NICKNAME        = fp_multiplier
 export DESIGN                 = fp_multiplier
 
-export PLATFORM               = asap7
+export PLATFORM               = sky130hd
 
 #export VERILOG_FILES          = $(sort $(wildcard $(abspath $(DESIGN_DIR)/../../src/$(DESIGN))/*.v))
-export SOURCE_DIR	      = /path/to/bigspicy/example_inputs/fp_multiplier
+export SOURCE_DIR	      = /home/aryap/src/bigspicy/example_inputs/fp_multiplier
 export VERILOG_FILES          = ${SOURCE_DIR}/fp_multiplier.v
 export SDC_FILE               = $(DESIGN_DIR)/constraint.sdc
 

@@ -439,6 +439,7 @@ class ExternalModule:
     self.name = None
     self.ports = {}
     self.port_order = []
+    self.signals = {}
     self.is_sequential = False
     self.is_passive = False
     self.default_parameters = {}
