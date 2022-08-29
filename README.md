@@ -221,9 +221,9 @@ do it if you want.
 ```
 ./bigspicy.py \
     --import \
-    --spice ${PDK_ROOT}/share/pdk/sky130A/libs.ref/sky130_fd_pr/spice/sky130_fd_pr__\*
-    --spice ${PDK_ROOT}/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice
-    --save sky130hd.pb
+    --spice ${PDK_ROOT}/share/pdk/sky130A/libs.ref/sky130_fd_pr/spice/sky130_fd_pr__\* \
+    --spice ${PDK_ROOT}/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice \
+    --save sky130hd.pb \
     --working_dir /tmp/bigspicy
 ```
 
