@@ -38,6 +38,7 @@ be installed with
 
 ```
 pip install -e ".[dev]"
+pip install -r requirements.txt
 ```
 
 ### Set up Xyce
@@ -88,11 +89,14 @@ protoc proto/*.proto --python_out=.
 
 ### Merge SPEF, Verilog and Spice information into Circuit protobuf
 
+The `lib/` files are examples of PDK spice decks (in this case, ASAP7) converted
+through `xdm_bdl`. They are currently not distributed with this repo.
+
 ```
 ./bigspicy.py \
     --import \
-    --verilog example_inputs/final.v \
-    --spef example_inputs/final.spef \
+    --verilog example_inputs/fp_multiplier/fp_multiplier.synth.v \
+    --spef /path/to/fp_multiplier/fp_multiplier.spef \
     --spice_header lib/7nm_TT.pm \
     --spice_header lib/asap7sc7p5t_27_R.sp \
     --top fp_multiplier \
