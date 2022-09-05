@@ -202,5 +202,6 @@ class ModuleReader:
       module.instances[instance.name] = instance
 
   def LoadParamList(module: Module, ast_node: ast.Node):
-    print('{} has a param list, which we ignore'.format(module))
+    if len(ast_node.children()):
+        print('{} has a param list, which we ignore'.format(module))
 
