@@ -280,6 +280,7 @@ class SpiceWriter():
     self.num_resistors_named = 0
     self.num_capacitors_named = 0
     self.num_other_named = 0
+    self.num_floating_nets = 0
 
   def ModulePortList(self, module):
     spice_port_list = []
@@ -294,9 +295,11 @@ class SpiceWriter():
 
   def SpiceSignalName(self, signal_or_slice, index=None, prefix=None):
     if signal_or_slice is None:
-      # Here we determine what to do with disconnected signals.
-      # Are they floating? Grounded? Powered?
-      raise NotImplementedError('Is this supposed to be a disconnection?')
+      # The signal is probably disconnected; create a new floating node that
+      # isn't connected to anything else and use that instead.
+      name = f'no_conn_{self.num_floating_nets}'
+      self.num_floating_nets += 1
+      return name
     if isinstance(signal_or_slice, circuit.Signal):
       return signal_or_slice.name
     assert(isinstance(signal_or_slice, circuit.Slice))
