@@ -57,6 +57,20 @@ Follow the XDM [installation instructions](https://github.com/Xyce/XDM) on their
 GitHub clone. If existing XDM-translated libraries are available, you can skip
 this step.
 
+#### XDM 2.5.0/Debian 11.4 build cheat-sheet
+
+```
+sudo apt install libboost-dev libboost-python-dev
+sudo pip3 install pyinstaller  # 'sudo' needed to be install in site packages dir
+wget https://github.com/Xyce/XDM/archive/refs/tags/Release-2.5.0.tar.gz
+tar xf XDM-Release-2.5.0.tar.gz
+cd XDM-Release-2.5.0/
+mkdir build && cd build
+cmake -DBOOST_ROOT=/usr/include/boost ../
+make -j $(nproc)
+sudo make install
+```
+
 ## Compile protos and prepare PDK models
 
 ### Generating SPICE library files
