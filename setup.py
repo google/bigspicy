@@ -38,7 +38,7 @@ setup(
     ##url="https://???",
     author="Arya Reais-Parsi",
     author_email="growly@google.com",
-    ##packages=find_packages(),
+    packages=find_packages(),
     ##python_requires=">=3.8, <4",
     install_requires=["pyverilog", "numpy", "matplotlib", "protobuf>4.21"],
     extras_require={
