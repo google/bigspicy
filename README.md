@@ -89,6 +89,16 @@ xdm_bdl -s hspice ~growly/src/asap7PDK_r1p7/models/hspice/7nm_TT.pm -d lib
 xdm_bdl -s hspice ~growly/src/asap7sc7p5t_27/CDL/xAct3D_extracted/asap7sc7p5t_27_R.sp -d lib
 ```
 
+These can then be included as Spice headers (blackboxes) or full Spice modules
+using the `--spice_header`/`--spice` arguments, e.g:
+
+```
+[...]
+    --spice_header lib/7nm_TT.pm \
+    --spice_header lib/asap7sc7p5t_27_R.sp \
+[...]
+```
+
 ### Compile protobufs
 
 ```
@@ -103,16 +113,21 @@ protoc proto/*.proto --python_out=.
 
 ### Merge SPEF, Verilog and Spice information into Circuit protobuf
 
-The `lib/` files are examples of PDK spice decks (in this case, ASAP7) converted
-through `xdm_bdl`. They are currently not distributed with this repo.
+In addition to some circuit definition, in order to generate a Spice deck the
+order of ports for each instantiated module are also required. When relying on
+PDK cells, that usually means providing the PDK spice models as a header.
+
+In the example below, `lib/sky130_fd_sc_hd.spice` is copied from
+`${PDK_ROOT}/share/pdk/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice`
+as it is produced by
+[`open_pdks`](https://github.com/RTimothyEdwards/open_pdks).
 
 ```
 ./bigspicy.py \
     --import \
     --verilog example_inputs/fp_multiplier/fp_multiplier.synth.v \
     --spef /path/to/fp_multiplier/fp_multiplier.spef \
-    --spice_header lib/7nm_TT.pm \
-    --spice_header lib/asap7sc7p5t_27_R.sp \
+    --spice_header lib/sky130_fd_sc_hd.spice \
     --top fp_multiplier \
     --save final.pb \
     --working_dir /tmp/bigspicy
@@ -123,22 +138,28 @@ through `xdm_bdl`. They are currently not distributed with this repo.
 ```
 ./bigspicy.py \
     --load /tmp/bigspicy/final.pb \
-    --spice_header lib/7nm_TT.pm \
-    --spice_header lib/asap7sc7p5t_27_R.sp \
+    --spice_header lib/sky130_fd_sc_hd.spice \
     --top fp_multiplier \
     --dump_spice fp_multiplier.sp
 ```
 
 ### Generate whole-module Spice model with transistors
 
+Requires models for the PDK standard cells (included as full-fat netlists with
+`--spice`) and also black-box models for the transistors (included with
+`--spice_header`). Then pass the `--flatten_spice` argument.
+
+If you had started with a gate-level netlist for an ASAP7 design, for example,
+you could do this:
+
 ```
 ./bigspicy.py \
     --load /tmp/bigspicy/final.pb \
     --spice_header lib/7nm_TT.pm \
-    --spice_header lib/asap7sc7p5t_27_R.sp \
-    --top fp_multiplier \
+    --spice lib/asap7sc7p5t_27_R.sp \
+    --top fp_multiplier_asap7 \
     --flatten_spice \
-    --dump_spice fp_multiplier.sp
+    --dump_spice fp_multiplier_asap7.sp
 ```
 
 ### Generate tests to measure input capacitance
@@ -148,7 +169,7 @@ through `xdm_bdl`. They are currently not distributed with this repo.
     --load /tmp/bigspicy/final.pb \
     --spice_header lib/7nm_TT.pm \
     --spice_header lib/asap7sc7p5t_27_R.sp \
-    --top fp_multiplier \
+    --top fp_multiplier_asap7 \
     --working_dir /tmp/bigspicy \
     --generate_input_capacitance_tests
 ```
@@ -172,9 +193,9 @@ done
 ```
 ./bigspicy.py \
     --load /tmp/bigspicy/final.pb \
-    --spice_def lib/7nm_TT.pm \
-    --spice_def lib/asap7sc7p5t_27_R.sp \
-    --top fp_multiplier \
+    --spice lib/7nm_TT.pm \
+    --spice lib/asap7sc7p5t_27_R.sp \
+    --top fp_multiplier_asap7 \
     --working_dir /tmp/bigspicy \
     --generate_module_tests \
     --test_manifest /tmp/bigspicy/test_manifest.pb \
@@ -186,9 +207,9 @@ done
 ```
 ./bigspicy.py \
     --load /tmp/bigspicy/final.pb \
-    --spice_def lib/7nm_TT.pm \
-    --spice_def lib/asap7sc7p5t_27_R.sp \
-    --top fp_multiplier \
+    --spice lib/7nm_TT.pm \
+    --spice lib/asap7sc7p5t_27_R.sp \
+    --top fp_multiplier_asap7 \
     --working_dir /tmp/bigspicy \
     --generate_module_tests \
     --test_manifest /tmp/bigspicy/test_manifest.pb \
@@ -210,9 +231,9 @@ done
 ```
 ./bigspicy.py \
     --load /tmp/bigspicy/final.pb \
-    --spice_def lib/7nm_TT.pm \
-    --spice_def lib/asap7sc7p5t_27_R.sp \
-    --top fp_multiplier \
+    --spice lib/7nm_TT.pm \
+    --spice lib/asap7sc7p5t_27_R.sp \
+    --top fp_multiplier_asap7 \
     --working_dir /tmp/bigspicy \
     --test_manifest /tmp/bigspicy/test_manifest.pb \
     --test_analysis /tmp/bigspicy/analysis.pb \

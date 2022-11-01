@@ -355,6 +355,9 @@ class SpiceWriter():
     else:
       module = self.design.external_modules[instance.module_name]
     connection_list = []
+    if not module.port_order:
+      print(f'warning: no port order for module {instance.module_name}, '
+            f'instance {instance.name} will not be connected')
     for port_name in module.port_order:
       signal = None
       if port_name in instance.connections:
