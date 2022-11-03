@@ -1,3 +1,5 @@
+# vim: set shiftwidth=2 softtabstop=2 ts=2 expandtab:
+
 import optparse
 import os
 import collections
@@ -66,7 +68,9 @@ class Design():
       # Create an external module.
       external_module = circuit.ExternalModule()
       external_module.name = name
-      external_module.GuessPorts(instances)
+      # TODO(growly): Driving by, this doesn't do anything. It should do
+      # something or be removed.
+      # external_module.GuessPorts(instances)
       self.external_modules[name] = external_module
 
     for module in self.known_modules.values():
@@ -108,8 +112,6 @@ class Design():
           connection.signal = signal
           connection.instance = instance
           instance.connections[port_name] = connection
-
-
 
   def ParseSPEF(self, spef_files):
     for f in spef_files:
@@ -351,6 +353,8 @@ class Design():
       parser.Read(file_name)
 
       if headers_only:
+        # The only thing we get from Spice headers is the port order for an
+        # external module.
         for module_name, port_order in parser.port_order_by_module.items():
           if module_name in self.external_modules:
             module = self.external_modules[module_name]
@@ -362,8 +366,12 @@ class Design():
 
           if module.port_order and module.port_order != port_order:
             raise RuntimeError(f'error: existing port order {module.port_order} vs new {port_order}')
-          else:
-            module.port_order = port_order
+
+          for port_name in port_order:
+            # This will create a Port and associated Signal object and append
+            # to the port order.
+            module.GetOrCreatePort(port_name)
+
       else:
         for subckt in parser.subckts:
           module = subckt.ToModule(self)

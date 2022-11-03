@@ -99,19 +99,15 @@ class CircuitWriter():
   @staticmethod
   def ToExternalModule(module, module_pb):
     module_pb.name.name = module.name
+    for port_name in module.port_order:
+      if port_name not in module.ports:
+        raise RuntimeError(
+            f'port named in port order without associated Port object: {port_name}')
+      port_pb = module_pb.ports.add()
+      port = module.ports[port_name]
+      CircuitWriter.ToPort(port, port_pb)
     for _, signal in module.signals.items():
       CircuitWriter.ToSignal(signal, module_pb.signals.add())
-    for port_name in module.port_order:
-      port_pb = module_pb.ports.add()
-      if port_name in module.ports:
-        port = module.ports[port_name]
-      else:
-        # Signal is probably a singleton interpreted from Spice.
-        port = circuit.Port()
-        port.direction = circuit.ExternalModule.GuessDirectionOfExternalModulePort(
-            port_name)
-        port.signal = circuit.Signal(port_name, width=1)
-      CircuitWriter.ToPort(port, port_pb)
 
   @staticmethod
   def ToParameter(name, value, param_pb):

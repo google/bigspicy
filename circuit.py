@@ -460,6 +460,35 @@ class ExternalModule:
     """ Guess the ports from all the instances. """
     pass
 
+  def GetOrCreateSignal(self, name, width=1):
+    if name in self.signals:
+      return self.signals[name]
+    # print(f'module {self.name} creating signal named "{name}"') ## Shut up already WE KNOW!
+    signal = Signal(name, width=width)
+    self.signals[name] = signal
+    return signal
+
+  def GetOrCreatePort(self, name, width=1, direction=Port.Direction.NONE):
+    if name in self.ports:
+      return self.ports[name]
+    print(f'module {self.name} creating port named "{name}" width={width} direction={direction}')
+    port = Port()
+    port.name = name
+    port.direction = direction
+
+    signal = self.GetOrCreateSignal(name, width=width)
+    signal.Connect(port)
+
+    # NOTE(growly): This is here because putting it in Signal is slightly more
+    # annoying (have to check if any index connects to the port before removing
+    # it in Disconnect).
+    signal.ports.add(port)
+
+    port.signal = signal
+    self.ports[name] = port
+    self.port_order.append(name)
+    return port
+
   def MakeReasonableGuessAtInputCapacitanceForPort(self, port_name, index=0):
     step = None
     sin = None
@@ -540,17 +569,12 @@ class ExternalModule:
       return Port.Direction.INPUT
 
 
-class Module:
+class Module(ExternalModule):
 
   def __init__(self):
-    self.name = None
-    self.ports = {}
-    self.port_order = []
-    self.signals = {}
+    ExternalModule.__init__(self)
+
     self.instances = {}
-    self.default_parameters = {}
-    self.is_sequential = False
-    self.is_passive = False
 
     # TODO(aryap): Need to know what ground and power nets are.
 
@@ -575,35 +599,6 @@ class Module:
   def __repr__(self):
     desc = f'[module {self.name}]'
     return desc
-
-  def GetOrCreateSignal(self, name, width=1):
-    if name in self.signals:
-      return self.signals[name]
-    ##print(f'module {self.name} creating signal named "{name}"') ## Shut up already WE KNOW!
-    signal = Signal(name, width=width)
-    self.signals[name] = signal
-    return signal
-
-  def GetOrCreatePort(self, name, width=1, direction=Port.Direction.NONE):
-    if name in self.ports:
-      return self.ports[name]
-    print(f'module {self.name} creating port named "{name}" width={width} direction={direction}')
-    port = Port()
-    port.name = name
-    port.direction = direction
-
-    signal = self.GetOrCreateSignal(name, width=width)
-    signal.Connect(port)
-
-    # NOTE(growly): This is here because putting it in Signal is slightly more
-    # annoying (have to check if any index connects to the port before removing
-    # it in Disconnect).
-    signal.ports.add(port)
-
-    port.signal = signal
-    self.ports[name] = port
-    self.port_order.append(name)
-    return port
 
   def Show(self):
     print(f'module: {self.name}')
