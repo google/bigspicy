@@ -269,7 +269,7 @@ class CircuitWriter():
       return
     if set_value in ('integer', 'double'):
       value = getattr(param_pb.value, set_value)
-      return circuit.NumericalValue(value, prefix)
+      return circuit.NumericalValue(value)
     if set_value == 'string':
       return param_pb.value.string
     if set_value == 'prefixed':
