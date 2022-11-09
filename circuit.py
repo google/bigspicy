@@ -250,6 +250,9 @@ class Connection:
     desc += ']'
     return desc
 
+  def IsDisconnected(self):
+    return self.signal is None and self.slice is None and self.concat is None
+
   def EnumerateWires(self):
     signal = self.GetConnectedSignal()
     indices = self.IndexOnSignal()
@@ -1179,7 +1182,7 @@ class TimingPath:
 
 def DefinePrimitives():
   global CAPACITOR
-  CAPACITOR = Module()
+  CAPACITOR = ExternalModule()
   CAPACITOR.name = 'CAPACITOR'
   CAPACITOR.is_passive = True
   _ = CAPACITOR.GetOrCreatePort('A', width=1, direction=Port.Direction.INOUT)
@@ -1187,7 +1190,7 @@ def DefinePrimitives():
   CAPACITOR.default_parameters['capacitance'] = NumericalValue(0.0, None)
 
   global RESISTOR
-  RESISTOR = Module()
+  RESISTOR = ExternalModule()
   RESISTOR.name = 'RESISTOR'
   RESISTOR.is_passive = True
   _ = RESISTOR.GetOrCreatePort('A', width=1, direction=Port.Direction.INOUT)
@@ -1195,7 +1198,7 @@ def DefinePrimitives():
   RESISTOR.default_parameters['resistance'] = NumericalValue(0.0, None)
 
   global INDUCTOR
-  INDUCTOR = Module()
+  INDUCTOR = ExternalModule()
   INDUCTOR.name = 'INDUCTOR'
   INDUCTOR.is_passive = True
   _ = INDUCTOR.GetOrCreatePort('A', width=1, direction=Port.Direction.INOUT)

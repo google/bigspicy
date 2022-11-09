@@ -141,7 +141,7 @@ class CircuitWriter():
     elif connection.concat is not None:
       raise Exception(f'Don\'t know how to map concats in conncections: {connection}')
     else:
-      raise Exception(f'Don\'t know how to map connection: {connection}')
+      raise Exception(f'Cannot map disconnected Connection object: {connection}')
     return conn_pb
 
   @staticmethod
@@ -151,6 +151,8 @@ class CircuitWriter():
     for name, value in instance.parameters.items():
       CircuitWriter.ToParameter(name, value, instance_pb.parameters.add())
     for port_name, connection in instance.connections.items():
+      if connection.IsDisconnected():
+        continue
       CircuitWriter.ToConnection(
           port_name, connection, instance_pb.connections.add())
 
@@ -277,7 +279,7 @@ class CircuitWriter():
       set_inner_value = prefixed_pb.WhichOneof('number')
       if set_inner_value in ('integer', 'double'):
         # This is a numerical value.
-        value = getattr(param_pb.value, set_value)
+        value = getattr(param_pb.value.prefixed, set_inner_value)
         prefix = CircuitWriter.FromSIPrefix(prefixed_pb.prefix)
         return circuit.NumericalValue(value, prefix)
     raise Exception(f'Cannot interpret Parameter {param_pb}')

@@ -378,7 +378,7 @@ class SpiceWriter():
     type_name = ''
     instance_name = self._MakeSpiceName(
         instance, additional_prefix=prefix) if generate_names else instance.name
-    skipped = False
+    skipped = None
 
     params = {}
     params.update(module.default_parameters)
@@ -392,7 +392,7 @@ class SpiceWriter():
       capacitance = instance.parameters['capacitance']
       if capacitance == NumericalValue(0.0, None):
         # Do not write 0-value capacitances.
-        skipped = True
+        skipped = 'because C=0'
       params['C'] = capacitance.XyceFormat()
     else:
       type_name = module.name 
@@ -401,7 +401,7 @@ class SpiceWriter():
     out = f'** {instance}\n'
     instantiation = f'{instance_name} {connections} {type_name} {params_out}'
     if skipped:
-      out += f'** {instantiation} [skipped]'
+      out += f'** {instantiation} [skipped {skipped}]'
     else:
       out += instantiation
     return out
