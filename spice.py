@@ -388,12 +388,14 @@ class SpiceWriter():
     # Special checks for spice primitives.
     if module.name == circuit.RESISTOR.name:
       params['R'] = instance.parameters['resistance'].XyceFormat()
+      del params['resistance']
     elif module.name == circuit.CAPACITOR.name:
       capacitance = instance.parameters['capacitance']
       if capacitance == NumericalValue(0.0, None):
         # Do not write 0-value capacitances.
         skipped = 'because C=0'
       params['C'] = capacitance.XyceFormat()
+      del params['capacitance']
     else:
       type_name = module.name 
 
