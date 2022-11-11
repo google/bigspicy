@@ -77,8 +77,9 @@ sudo make install
 
 Spice files fed to `bigspicy` should be in `Xyce` format because `bigspicy` does
 minimal internal processing of the files and will include them almost verbatim.
+These files are in turn read directly into Xyce.
 That means that any PDK Spice files you receive should be converted to `Xyce`'s
-spice dialect. The `xdm_bdl` tool (XDM) can do a lot of this for you, though
+spice dialect. The `xdm_bdl` tool (XDM) can usually do this for you, though
 in some cases you will need to interfere by hand :(
 
 #### e.g. Convert ASAP7 models using `xdm_bdl`
