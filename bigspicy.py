@@ -185,6 +185,7 @@ def WithOptions(options: optparse.Values):
   analyser = spice_analyser.SpiceAnalyser(design, output_directory, spice_libs)
 
   if options.generate_input_capacitance_tests:
+    analyser.AddInputCapacitanceTestsForKnownModules(used_by_module=top)
     analyser.AddInputCapacitanceTestsForExternalModules(used_by_module=top)
     analyser.WriteMetadata(options.test_manifest, options.test_analysis)
 

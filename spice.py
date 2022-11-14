@@ -454,7 +454,7 @@ class SpiceWriter():
     for child_instance in module.instances.values():
       # If it's a Module, it's internal, and we know the contents. Otherwise
       # it would be an ExternalModule.
-      if isinstance(child_instance.module, circuit.Module):
+      if type(child_instance.module) is circuit.Module:
         out += self.FlattenedInstance(child_instance, prefix=instance.name)
         continue
 
@@ -465,7 +465,7 @@ class SpiceWriter():
   def FormatInstances(self, instances, generate_names=False):
     out = ''
     for instance in instances:
-      if self.flatten and isinstance(instance.module, circuit.Module):
+      if self.flatten and type(instance.module) is circuit.Module:
         out += f'{self.FlattenedInstance(instance)}\n'
       else:
         out += f'{self.SpiceInstantiation(instance, generate_names=generate_names)}\n'

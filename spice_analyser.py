@@ -626,12 +626,12 @@ class SpiceAnalyser:
 
   @staticmethod
   def _NetToWire(module, net_pb):
-    if isinstance(module, circuit.Module):
+    if type(module) is circuit.Module:
       signal_name = net_pb.signal_name
       signal = module.signals[signal_name]
       index = net_pb.index
       return circuit.Wire(signal, index)
-    elif isinstance(module, circuit.ExternalModule):
+    elif type(module) is circuit.ExternalModule:
       signal = module.ports[net_pb.signal_name].signal
       return circuit.Wire(signal, net_pb.index)
 
@@ -649,7 +649,7 @@ class SpiceAnalyser:
       name = SpiceAnalyser._StripStringPrefix(name, 'X0')
     name, index = SplitIndex(name)
 
-    if isinstance(module, circuit.ExternalModule):
+    if type(module) is circuit.ExternalModule:
       try:
         signal = module.ports[name].signal
         return circuit.Wire(signal, index)
@@ -817,7 +817,7 @@ class SpiceAnalyser:
       return None
     # Just take the first one.
     port_name, module, load_port = possible_ports.pop()
-    if isinstance(module, circuit.ExternalModule):
+    if type(module) is circuit.ExternalModule:
       return module.MakeReasonableGuessAtInputCapacitanceForPort(port_name, index)
     return None
 
@@ -1033,7 +1033,7 @@ class SpiceAnalyser:
           sum_C_ii += C_ii
         avg_C_ii = sum_C_ii / len(ac)
 
-        if not isinstance(module, circuit.ExternalModule):
+        if not type(module) is circuit.ExternalModule:
           raise NotImplementedError()
         # TODO(growly): Unfortunately in ExternalModules we call Signals the
         # same names as the Ports connecting to them.
@@ -1154,7 +1154,7 @@ class SpiceAnalyser:
     headers = set()
     rows = []
     for module in self.design.external_modules.values():
-      if not isinstance(module, circuit.ExternalModule):
+      if not type(module) is circuit.ExternalModule:
         continue
       row = {}
       for port_name in module.port_order:
@@ -1195,7 +1195,7 @@ class SpiceAnalyser:
                                  tags=['measure_input_capacitance'])
 
 
-    for port_name, port in module.port_network_ports.items():
+    for port_name, port in module.ports.items():
       signal = port.signal
       if signal.name in self.design.power_net_names or (
           signal.name in self.design.ground_net_names):
@@ -1212,6 +1212,8 @@ class SpiceAnalyser:
         region.port_network_ports[wire.SpiceName()] = port
 
     if not region.port_network_ports:
+      print(f'design region {region.name} for module {module.name} has not '
+            'defined any port network ports, no linear test will be written')
       # No ports. Nothing to test. Abandon.
       return
     
@@ -1346,12 +1348,12 @@ class SpiceAnalyser:
     region = circuit.DesignRegion()
     region.name = module.name
     region.module = module
-    if isinstance(module, circuit.Module):
+    if type(module) is circuit.Module:
       region.dut_type = circuit.DesignRegion.DUTType.MODULE
-    elif isinstance(module, circuit.ExternalModule):
+    elif type(module) is circuit.ExternalModule:
       region.dut_type = circuit.DesignRegion.DUTType.EXTERNAL_MODULE
     subckt_file = None
-    if isinstance(module, circuit.Module):
+    if type(module) is circuit.Module:
       # Do not write out external modules; assume the definitions are included
       # in spice libraries given to use.
       subckt_file = os.path.join(self.output_directory, f'{module.name}.sp')
@@ -1403,12 +1405,12 @@ class SpiceAnalyser:
   def AddDCSourcesForPowerNets(self, module, region):
     for power_net in self.design.power_net_names:
       power_signal = None
-      if isinstance(module, circuit.Module):
+      if type(module) is circuit.Module:
         try:
           power_signal = module.signals[power_net]
         except KeyError:
           continue
-      elif isinstance(module, circuit.ExternalModule):
+      elif type(module) is circuit.ExternalModule:
         try:
           power_signal = module.ports[power_net].signal
         except KeyError:
@@ -1581,12 +1583,28 @@ class SpiceAnalyser:
     for _, region in self.regions.items():
       self.AddRegionTest(region)
 
+  def AddInputCapacitanceTestsForKnownModules(self, used_by_module=None):
+    modules = set()
+    if used_by_module is not None:
+      for name, instance in used_by_module.instances.items():
+        module = instance.module
+        if type(instance.module) is circuit.Module and (
+            module.name not in circuit.PRIMITIVE_MODULES):
+          modules.add(module)
+    else:
+      modules.update(
+          module for module in self.design.known_modules.values()
+          if module.name not in circuit.PRIMITIVE_MODULES)
+
+    for module in modules:
+      self.AddInputCapacitanceTests(module)
+
   def AddInputCapacitanceTestsForExternalModules(self, used_by_module=None):
     ext_modules = set()
     if used_by_module is not None:
       for name, instance in used_by_module.instances.items():
         ext_module = instance.module
-        if isinstance(instance.module, circuit.ExternalModule) and (
+        if type(instance.module) is circuit.ExternalModule and (
             ext_module.name not in circuit.PRIMITIVE_MODULES):
           ext_modules.add(ext_module)
     else:

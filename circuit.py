@@ -269,7 +269,7 @@ class Connection:
     raise NotImplementedError()
 
   def DirectionOfInstancePort(self):
-    if (isinstance(self.instance.module, ExternalModule) and
+    if (type(self.instance.module) is ExternalModule and
         self.port_name not in self.instance.module.ports):
       return ExternalModule.GuessDirectionOfExternalModulePort(self.port_name)
 
@@ -953,7 +953,7 @@ class Module(ExternalModule):
 
           # If we have data on the load capacitance at this boundary (i.e. the
           # input capacitance to a module), we include it as a simulated load.
-          if isinstance(instance.module, ExternalModule) and (
+          if type(instance.module) is ExternalModule and (
               connection.DirectionOfInstancePort() == Port.Direction.INPUT):
             region.AttachCapacitiveLoads(instance, connection, update_ports=True)
 
@@ -1130,7 +1130,7 @@ class DesignRegion:
     port_name = connection.port_name
     wires = EnumerateWiresInConnection(connection)
     module = instance.module
-    assert(isinstance(module, ExternalModule))
+    assert(type(module) is ExternalModule)
     for i, wire in enumerate(wires):
       input_capacitance = module.MakeReasonableGuessAtInputCapacitanceForPort(
           port_name, i)
