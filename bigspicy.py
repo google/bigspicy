@@ -284,8 +284,10 @@ def WithOptions(options: optparse.Values):
 
   if options.dump_spice is not None:
     spice_writer = spice.SpiceWriter(design, flatten=options.flatten_spice)
-    spice_writer.WriteTop(
-        PrefixRelativeName(output_directory, options.dump_spice))
+    spice_file = PrefixRelativeName(output_directory, options.dump_spice)
+    spice_writer.WriteTop(spice_file)
+    print(f'wrote top module ({top.name}) spice module: {spice_file}')
+
 
 
 if __name__ == '__main__':

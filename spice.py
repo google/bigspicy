@@ -106,6 +106,7 @@ class SpiceReader():
   class State(Enum):
     NONE = 0
     SUBCKT = 1
+    INCLUDE = 2
 
   def __init__(self, headers_only=False):
     self.port_order_by_module = {}
@@ -125,10 +126,24 @@ class SpiceReader():
     relative_to = os.path.dirname(source_file)
     return os.path.normpath(os.path.join(relative_to, path))
 
+  def ParseInclude(self, source_file_name, lines):
+    line = lines[0]
+    i = 1
+    while i < len(lines):
+      if line.startswith('+'):
+        line += line[1:]
+      i += 1
+
+    tokens = line.lower().split()
+    # Remove '.include' command which should be first token:
+    remaining_tokens = ' '.join(tokens[1:])
+    return SpiceReader.ResolvePathReference(source_file_name, remaining_tokens)
+
   def ParseSubckt(self, lines):
     if not lines:
       return
 
+    ignore_tokens = {'params:'}
     module_name = None
     ports = []
     params = []
@@ -138,7 +153,9 @@ class SpiceReader():
       nonlocal module_name
       # God bless you, regular expressions:
       tokens = SPLIT_KEEPING_PARAMS_RE.split(line)
-      tokens = list(filter(lambda x: x is not None and len(x) > 0, tokens))
+      tokens = list(filter(
+          lambda x: x is not None and len(x) > 0 and x.lower() not in ignore_tokens,
+          tokens))
       if not tokens:
         return
       if tokens[0].lower() == '.subckt':
@@ -238,11 +255,18 @@ class SpiceReader():
               self.subckts.append(subckt)
           continue
 
+        if state == SpiceReader.State.INCLUDE:
+          lines.append(line)
+          if line != '' and spice_command != '+':
+            new_file_name = self.ParseInclude(file_name, lines)
+            print(f'including spice file: {new_file_name}')
+            included_files.add(new_file_name)
+            state = SpiceReader.State.NONE
+          continue
+
         if spice_command == '.include':
-          remaining_tokens = ' '.join(tokens)
-          new_file_name = SpiceReader.ResolvePathReference(file_name, remaining_tokens)
-          print(f'including spice file: {new_file_name}')
-          included_files.add(new_file_name)
+          lines = [line]
+          state = SpiceReader.State.INCLUDE
 
         elif spice_command == '.subckt':
           lines = [line]
