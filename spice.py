@@ -134,7 +134,7 @@ class SpiceReader():
         line += line[1:]
       i += 1
 
-    tokens = line.lower().split()
+    tokens = line.split()
     # Remove '.include' command which should be first token:
     remaining_tokens = ' '.join(tokens[1:])
     return SpiceReader.ResolvePathReference(source_file_name, remaining_tokens)
