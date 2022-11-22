@@ -257,12 +257,12 @@ class SpiceReader():
 
         if state == SpiceReader.State.INCLUDE:
           lines.append(line)
-          if line != '' and spice_command != '+':
+          if line != '' and not spice_command.startswith('+'):
             new_file_name = self.ParseInclude(file_name, lines)
             print(f'including spice file: {new_file_name}')
             included_files.add(new_file_name)
             state = SpiceReader.State.NONE
-          continue
+            # Continue with parsing; do not skip this line.
 
         if spice_command == '.include':
           lines = [line]
