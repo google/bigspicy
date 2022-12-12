@@ -86,8 +86,8 @@ in some cases you will need to interfere by hand :(
 
 For example, for the `TT` corner and `RVT` ASAP7 cells:
 ```
-xdm_bdl -s hspice ~growly/src/asap7PDK_r1p7/models/hspice/7nm_TT.pm -d lib
-xdm_bdl -s hspice ~growly/src/asap7sc7p5t_27/CDL/xAct3D_extracted/asap7sc7p5t_27_R.sp -d lib
+xdm_bdl -s hspice ${HOME}/src/asap7PDK_r1p7/models/hspice/7nm_TT.pm -d lib
+xdm_bdl -s hspice ${HOME}/src/asap7sc7p5t_27/CDL/xAct3D_extracted/asap7sc7p5t_27_R.sp -d lib
 ```
 
 These can then be included as Spice headers (blackboxes) or full Spice modules
